@@ -38,6 +38,26 @@ def all_songs(artist_name):
     return songs
 
 
+def one_song(song_name):
+    conn = sqlite3.connect('C:\\Users\\Fernando Bernal\\Desktop\\myAppManager\\DB\\artists.db')
+
+    cursor = conn.cursor()
+    # Execute the query to retrieve all songs by the artist
+    cursor.execute('''
+            SELECT Songs.title, Songs.song_filepath
+            FROM Songs
+            JOIN SongArtists ON Songs.song_id = SongArtists.song_id
+            JOIN Artists ON SongArtists.artist_id = Artists.artist_id
+            WHERE Songs.title = ?
+        ''', (song_name,))
+
+    # Fetch all results
+    songs = cursor.fetchone()
+    print(songs)
+    conn.close()
+    return songs
+
+one_song('Hello')
 
 # # Define the artist names
 # artist_1 = input('Insert name of artist 1: ')

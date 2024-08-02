@@ -3,6 +3,7 @@ import customtkinter
 import os
 from PIL import Image
 import MyScrollableFrame
+from playsound import playsound
 from DB import db_operations
 
 CATALOGS_FILEPATH = "C:\\Users\\Fernando Bernal\\Desktop\\Catalogs"
@@ -26,6 +27,8 @@ class App(customtkinter.CTk):
                                                        size=(500, 150))
         self.image_icon_image = customtkinter.CTkImage(Image.open(os.path.join(image_path, "open-folder.png")),
                                                        size=(20, 20))
+        self.image_play_audio = customtkinter.CTkImage(Image.open(os.path.join(image_path, "play-button-arrowhead.png")),
+                                                       size=(20, 20))
         self.home_image = customtkinter.CTkImage(light_image=Image.open(os.path.join(image_path, "home_dark.png")),
                                                  dark_image=Image.open(os.path.join(image_path, "home_light.png")),
                                                  size=(20, 20))
@@ -36,7 +39,7 @@ class App(customtkinter.CTk):
             light_image=Image.open(os.path.join(image_path, "add_user_dark.png")),
             dark_image=Image.open(os.path.join(image_path, "add_user_light.png")), size=(20, 20))
 
-        # create navigation frame
+        # create navigation frame ////////////////////////////////////////////////////////////////////////////////////////
         self.navigation_frame = customtkinter.CTkFrame(self, corner_radius=0)
         self.navigation_frame.grid(row=0, column=0, sticky="nsew")
         self.navigation_frame.grid_rowconfigure(4, weight=1)
@@ -63,14 +66,14 @@ class App(customtkinter.CTk):
         self.frame_2_button.grid(row=2, column=0, sticky="ew")
 
         self.frame_3_button = customtkinter.CTkButton(self.navigation_frame, corner_radius=0, height=40,
-                                                      border_spacing=10, text="Frame 3",
+                                                      border_spacing=10, text="Media Player",
                                                       fg_color="transparent", text_color=("gray10", "gray90"),
                                                       hover_color=("gray70", "gray30"),
                                                       image=self.add_user_image, anchor="w",
                                                       command=self.frame_3_button_event)
         self.frame_3_button.grid(row=3, column=0, sticky="ew")
 
-        # create home frame
+        # create home frame ////////////////////////////////////////////////////////////////////////////////////////
         self.home_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.home_frame.grid_columnconfigure(0, weight=1)
 
@@ -83,7 +86,7 @@ class App(customtkinter.CTk):
                                                                    command=self.get_catalogs)
         self.home_frame_button_open_file.grid(row=2, column=0, padx=20, pady=10)
 
-        # create second frame
+        # create second frame ////////////////////////////////////////////////////////////////////////////////////////
         self.second_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
         self.second_frame.grid_columnconfigure(0, weight=1)
 
@@ -111,12 +114,25 @@ class App(customtkinter.CTk):
 
 
 
-        # create third frame
+        # create third frame ////////////////////////////////////////////////////////////////////////////////////////
         self.third_frame = customtkinter.CTkFrame(self, corner_radius=0, fg_color="transparent")
+        self.third_frame_entry = customtkinter.CTkEntry(self.third_frame, placeholder_text="Search")
+        self.third_frame_title = customtkinter.CTkLabel(self.third_frame, text='MEDIA PLAYER')
+        self.third_frame_title.grid(row=0, column=0, pady=10, padx=200)
+
+        self.third_frame_entry.grid(row=1, column=0)
+
+        self.third_frame_search_button = customtkinter.CTkButton(self.third_frame, text="Search",
+                                                                  image=self.image_icon_image, compound="right",
+                                                                  command=self.search_song)
+
+        self.third_frame_search_button.grid(row=2, column=0, pady=10)
 
         # select default frame
         self.select_frame_by_name("home")
 
+
+    # Methods ////////////////////////////////////////////////////////////////////////////////////////
     def select_frame_by_name(self, name):
         # set button color for selected button
         self.home_button.configure(fg_color=("gray75", "gray25") if name == "home" else "transparent")
@@ -171,6 +187,25 @@ class App(customtkinter.CTk):
             for i in all_songs:
                 self.second_frame_textbox.insert("0.0", ''.join(i)+'\n')
             self.second_frame_textbox.configure(state="disabled")
+
+    def search_song(self):
+        song_info = db_operations.one_song(self.third_frame_entry.get())
+        if song_info:
+            self.third_frame_song_info = customtkinter.CTkLabel(self.third_frame, text='Song Name: '+song_info[0])
+            self.third_frame_song_info.grid(row=3, column=0, pady=10)
+
+            self.third_frame_play_song_button = customtkinter.CTkButton(self.third_frame, text='', image=self.image_play_audio, width=50,
+                                                                        compound="right",
+                                                                        command=lambda: self.play_song(song_info[1]))
+
+            self.third_frame_play_song_button.grid(row=4, column=0, pady=10)
+
+
+    def play_song(self, song_path):
+        os.system('afplay ' + song_path)
+
+
+
 
 
 app = App()
